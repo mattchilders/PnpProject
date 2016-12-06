@@ -1,9 +1,8 @@
 # PnpProject
-# ###############
-#  Usage Examples...
  See main() for creating a new project with devices..
 
-# ############### 
+
+# ###############
 #Get an existing Project:
 Instantiate the Project and then call "getProjectByName" or "getProjectById"
 ```python
