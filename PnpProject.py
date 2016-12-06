@@ -132,13 +132,23 @@ def get_task_id(credentials, task_id):
 
 class PnpProject:
     def __init__(self, credentials):
-        self.id = None
         self.error = False
         self.error_reason = ''
         self.device_list = {}
         self.credentials = credentials
-        self.server = credentials['server']
-        self.ticket = credentials['ticket']
+        #APIC-EM PnP Project Attribues:
+        self.id = None
+        self.state = None
+        self.provisionedBy = None
+        self.provisionedOn = None
+        self.siteName = None
+        self.tftpServer = None
+        self.tftpPath = None
+        self.note = None
+        self.deviceCount = None
+        self.pendingDeviceCount = None
+        self.deviceLastUpdate = None
+        self.installerUserID = None
 
 
     def create_project(self, projectParameters):
@@ -246,9 +256,37 @@ class PnpProject:
 
 class PnpDevice:
     def __init__(self):
-        self.id = None
         self.error = False
         self.error_reason = ''
+        #APIC-EM PnP Device Attribues:
+        self.authStatus = None
+        self.lastContact = None
+        self.deviceId = None
+        self.lastStateTransitionTime = None
+        self.stateDisplay = None
+        self.hostName = None
+        self.serialNumber = None
+        self.tag = None
+        self.id = None
+        self.platformId = None
+        self.site = None
+        self.imageId = None
+        self.configId = None
+        self.bootStrapId = None
+        self.licenseString = None
+        self.apCount = None
+        self.isMobilityController = None
+        self.pkiEnabled = None
+        self.sudiRequired = None
+        self.connectedToDeviceId = None
+        self.connectedToPortId = None
+        self.connectedToPortName = None
+        self.connetedToLocationCivicAddr = None
+        self.imagePreference = None
+        self.connectedToDeviceHostName = None
+        self.connetedToLocationGeoAddr = None
+        self.configPreference = None
+self.attributeInfo = None
 
     def create_device(self, device_parameters, project):
         """ device_parameters needs to be a dictionary of the following format (not all fields required):

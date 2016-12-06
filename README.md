@@ -21,7 +21,7 @@ device_list is a property of the PnpProject class that keeps a dictionary with t
 >>>
 ```
 
-Access PnpDevice class via the device_list Property:
+Access PnpDevice class via the device_list property:
 ```python
 >>> proj.device_list['switch1'].hostName
 u'switch1'
@@ -102,3 +102,51 @@ To get an image id, pass the 'image' attribute along with the file name:
 >>> get_file_id_by_name('c2960x-universalk9-mz.152-2.E3.bin', 'image')
 u'f439bbc9-a73f-45e9-88f0-11f86152cd08'
 ```
+
+# ###############
+### Exposing Project and Device Attributes
+when creating or attaching to an existing project, the attributes available are loaded as properties into the project or device class.  If the attribute doesn't exist on APIC-EM, it will be set to a default value of None
+
+Project Attributes that will become class properties are:
+```
+projectParameters {
+state (string, optional): Project state,
+id (string): Project ID,
+provisionedBy (string, optional): User creating the project,
+provisionedOn (string, optional): Creation time for project,
+siteName (string): Project name,
+tftpServer (string, optional): TFTP server host name or IP address,
+tftpPath (string, optional): TFTP server path,
+note (string, optional): Project notes. Any file can be attached,
+deviceCount (integer, optional): Number of devices under the project,
+pendingDeviceCount (integer, optional): Number of devices in pending state,
+deviceLastUpdate (string, optional): Last contact time among all devices in this project,
+installerUserID (string, optional): Installer user ID
+```
+
+Device Attributes that will become class properties are:
+```
+serialNumber (string): Serial number,
+id (string): ID of device,
+site (string, optional): Site to which device belongs if auto-provisioned,
+imageId (string, optional): Image file ID,
+platformId (string): Platform ID,
+hostName (string, optional): Host name,
+configId (string, optional): Configuration file id,
+bootStrapId (string, optional): Bootstrap file id,
+pkiEnabled (boolean, optional): Configure PKCS#12 trust point during PNP workflow if true,
+sudiRequired (boolean, optional),
+licenseString (string, optional): License string,
+apCount (string, optional): Wireless AP count,
+isMobilityController (string, optional): Specify if device is a wireless mobility controller,
+connectedToDeviceId (string, optional),
+connectedToPortId (string, optional),
+tag (string, optional): Tag of device,
+connectedToPortName (string, optional),
+connetedToLocationCivicAddr (string, optional),
+imagePreference (string, optional),
+connectedToDeviceHostName (string, optional),
+configPreference (string, optional),
+connetedToLocationGeoAddr (string, optional)
+```
+
