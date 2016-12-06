@@ -3,7 +3,7 @@ PnpProject is a python class for creating and modifying Plug-n-Play Projects on 
 See main() for example of how to create a new project and populate with devices..
 
 # ###############
-#Get an existing Project:
+###Get an existing Project:
 Instantiate the Project and then call 'get_project_by_name' or 'get_project_by_id'
 ```python
 >>> credentials = login(username='admin', password='password', server='1.1.1.1')
@@ -47,14 +47,14 @@ u'switch1'
 ```
 
 # ###############
-#Methods and Properties of the pnpDevice class:
+###Methods and Properties of the pnpDevice class:
 ```python
 >>> dir(proj.get_device_by_name('switch1'))
 ['__doc__', '__init__', '__module__', 'apCount', 'attributeInfo', 'create_device', 'error', 'error_reason', 'hostName', 'id', 'imageId', 'isMobilityController', 'pkiEnabled', 'platformId', 'populate_device_from_apic', 'site', 'state', 'stateDisplay', 'sudiRequired']
 ```
 
 # ###############
-#Add a device to an existing Project
+###Add a device to an existing Project
 ```python
 >>> image_id = get_file_id_by_name(credentials, 'cat3k_caa-universalk9.SPA.03.07.04.E.152-3.E4.bin', 'image')
 >>> config_id = get_file_id_by_name(credentials, 'switch4.txt')
@@ -64,7 +64,7 @@ Device Added to Project: switch4 (3ecc60a8-19a8-41c9-977d-f0e39383b953) added to
 ```
 
 # ###############
-# Create a Project with specific settings (like tftpserver and path...):
+### Create a Project with specific settings (like tftpserver and path...):
 Instantiate the Project and create the definition of the project (camelCase for Project Definitions to maintain consistency with APIC-EM naming)
 ```python
 >>> credentials = login(username='admin', password='password', server='1.1.1.1')
@@ -87,7 +87,7 @@ u'/files/'
 ```
  
 # ###############
-# Get File Id's in PnP's file repository:
+### Get File Id's in PnP's file repository:
 
 get_file_id_by_name function takes a file name and returns the id - by default it will search the config file store
 ```python
