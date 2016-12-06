@@ -5,31 +5,39 @@
  
 # Get an existing Project:
 Instantiate the Project and then call "getProjectByName" or "getProjectById"
-\>>> proj = pnpProject()
-\>>> proj.getProjectByName('myProject')
-\>>>
- deviceList is a property of the pnpProject class that keeps a dictionary with the device hostName as the key, and a pnpDevice object as the value:
-\>>> proj.deviceList
- {u'switch1': <__main__.pnpDevice instance at 0x10e235f38>, u'switch2': <__main__.pnpDevice instance at 0x10e2431b8>, u'switch3': <__main__.pnpDevice instance at 0x10e243098>}
-\>>>
-\>>>
-  access pnpDevice class via the deviceList Property:
-\>>> proj.deviceList['switch1'].hostName
- u'switch1'
-\>>> proj.deviceList['switch1'].configId
- u'cb87c80b-9011-433f-9275-9e5c92897f0a'
-\>>> proj.deviceList['switch1'].imageId
- u'f439bbc9-a73f-45e9-88f0-11f86152cd08'
-\>>>
-  deviceCount is a property of pnpProject
-\>>> proj.deviceCount
- 9
-\>>>
-  getDeviceByName and getDeviceById are methods of pnpProject that return the pnpDevice object in the Project
-\>>> proj.getDeviceByName('switch1').id
- u'aa5550b6-3df0-468f-9cae-5ab4c2136b37'
-\>>> proj.getDeviceById('aa5550b6-3df0-468f-9cae-5ab4c2136b37').hostName
- u'switch1'
+```python
+>>> proj = pnpProject()
+>>> proj.getProjectByName('myProject')
+>>>
+```
+
+deviceList is a property of the pnpProject class that keeps a dictionary with the device hostName as the key, and a pnpDevice object as the value:
+```python
+>>> proj.deviceList
+{u'switch1': <__main__.pnpDevice instance at 0x10e235f38>, u'switch2': <__main__.pnpDevice instance at 0x10e2431b8>, u'switch3': <__main__.pnpDevice instance at 0x10e243098>}
+>>>
+>>>
+ access pnpDevice class via the deviceList Property:
+>>> proj.deviceList['switch1'].hostName
+u'switch1'
+>>> proj.deviceList['switch1'].configId
+u'cb87c80b-9011-433f-9275-9e5c92897f0a'
+>>> proj.deviceList['switch1'].imageId
+u'f439bbc9-a73f-45e9-88f0-11f86152cd08'
+>>>
+```
+
+ deviceCount is a property of pnpProject
+```python
+>>> proj.deviceCount
+9
+>>>
+ getDeviceByName and getDeviceById are methods of pnpProject that return the pnpDevice object in the Project
+>>> proj.getDeviceByName('switch1').id
+u'aa5550b6-3df0-468f-9cae-5ab4c2136b37'
+>>> proj.getDeviceById('aa5550b6-3df0-468f-9cae-5ab4c2136b37').hostName
+u'switch1'
+```
 
 # ###############
 #  Methods and Properties of the pnpDevice class:
