@@ -6,7 +6,9 @@ See main() for example of how to create a new project and populate with devices.
 #Get an existing Project:
 Instantiate the Project and then call "getProjectByName" or "getProjectById"
 ```python
->>> proj = pnpProject()
+>>> credentials = login(username='admin', password='password', server='1.1.1.1')
+>>>
+>>> proj = pnpProject(credentials)
 >>> proj.getProjectByName('myProject')
 >>>
 ```
@@ -55,11 +57,12 @@ u'switch1'
 # Create a Project with specific settings (like tftpserver and path...):
 Instantiate the Project and create the definition of the project
 ```python
->>> myProj = pnpProject()
+>>> credentials = login(username='admin', password='password', server='1.1.1.1')
+>>> myProj = pnpProject(credentials)
 >>> projectDef = {'siteName' : 'TFTPProject', 'tftpServer' : '1.1.1.1', 'tftpPath' : '/files/'}
 ```
 
-Call the createProjet method of the pnpProject to creat the project
+Call the createProject method of the pnpProject to creat the project
 ```python
 >>> myProj.createProject(projectDef)
 Project Created: TFTPProject (00cdf394-48d7-474a-b4d5-535b51e488d9)
@@ -88,5 +91,4 @@ To get an image id, pass the 'image' attribute along with the file name:
 ```python
 >>> getFileIdByName('c2960x-universalk9-mz.152-2.E3.bin', 'image')
 u'f439bbc9-a73f-45e9-88f0-11f86152cd08'
->>> getFileIdByName('c2960x-universalk9-mz.152-2.E3.bin')
 ```
