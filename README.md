@@ -54,6 +54,16 @@ u'switch1'
 ```
 
 # ###############
+#Add a device to an existing Project
+```python
+>>> image_id = get_file_id_by_name(credentials, 'cat3k_caa-universalk9.SPA.03.07.04.E.152-3.E4.bin', 'image')
+>>> config_id = get_file_id_by_name(credentials, 'switch4.txt')
+>>> device_definition = {"imageId": image_id, "platformId": 'WS-C3650-48PQ', "configId": config_id, "hostName": "switch4"}
+>>> proj.add_device(device_definition)
+Device Added to Project: switch4 (3ecc60a8-19a8-41c9-977d-f0e39383b953) added to Project myProject (be358095-2f6a-4e47-8dcd-e6b9bdf66ecc)
+```
+
+# ###############
 # Create a Project with specific settings (like tftpserver and path...):
 Instantiate the Project and create the definition of the project (camelCase for Project Definitions to maintain consistency with APIC-EM naming)
 ```python

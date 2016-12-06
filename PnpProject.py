@@ -218,6 +218,7 @@ class PnpProject:
             print "Error: Unable to get Project: " + value['message'] + ' (' + value['detail'] + ')'
             return None
 
+        self.id = id
         if 'state' in value: self.state = value['state']
         if 'provisionedBy' in value: self.provisionedBy = value['provisionedBy']
         if 'provisionedOn' in value: self.provisionedOn = value['provisionedOn']
