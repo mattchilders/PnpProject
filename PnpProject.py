@@ -5,16 +5,13 @@ import requests
 import sys
 import traceback
 import ast
-# import IPython
 
 DEBUG = False
 requests.packages.urllib3.disable_warnings()
 
-
 GET = "get"
 POST = "post"
 files = {'config': None, 'image': None}
-ticket = None
 
 
 def login(username, password, server):
@@ -42,12 +39,12 @@ def login(username, password, server):
         return {'ticket': ticket, 'server': server}
 
 
-def doRestCall(credentials, command, url, aData=None):
-    """ doRestCall is for simplifying REST calls to APIC-EM
+def make_rest_call(credentials, command, url, aData=None):
+    """ make_rest_call is for simplifying REST calls to APIC-EM
     """
     response_json = None
     payload = None
-    apiurl = 'https://' + credentials['server'] + url
+    api_url = 'https://' + credentials['server'] + url
     try:
         # if data for the body is passed in put into JSON format for the payload
         if(aData is not None):
@@ -56,12 +53,12 @@ def doRestCall(credentials, command, url, aData=None):
         # add the service ticket and content type to the header
         header = {"X-Auth-Token": credentials['ticket'], "content-type": "application/json"}
         if(command == GET):
-            r = requests.get(apiurl, data=payload, headers=header, verify=False)
+            r = requests.get(api_url, data=payload, headers=header, verify=False)
             if DEBUG:
                 print(url, payload, header)
 
         elif(command == POST):
-            r = requests.post(apiurl, data=payload, headers=header, verify=False)
+            r = requests.post(api_url, data=payload, headers=header, verify=False)
             if DEBUG:
                 print(url, payload, header)
         else:
@@ -88,45 +85,44 @@ def doRestCall(credentials, command, url, aData=None):
               (err, msg_det, traceback.format_exc()))
 
 
-def refreshFileList(credentials, type='config'):
+def refresh_file_list(credentials, type='config'):
     if type != 'config' and type != 'image':
         return None
     if type == 'config':
-        files[type] = doRestCall(credentials, GET, "/api/v1/file/namespace/config")
+        files[type] = make_rest_call(credentials, GET, "/api/v1/file/namespace/config")
     elif type == 'image':
-        files[type] = doRestCall(credentials, GET, "/api/v1/file/namespace/image")
+        files[type] = make_rest_call(credentials, GET, "/api/v1/file/namespace/image")
 
 
-def getFileIdByName(credentials, fileName, type='config'):
+def get_file_id_by_name(credentials, file_name, type='config'):
     if type != 'config' and type != 'image':
         return None
     if files[type] is None:
-        refreshFileList(credentials, type)
+        refresh_file_list(credentials, type)
     for file in files[type]['response']:
-        if file['name'] == fileName:
+        if file['name'] == file_name:
             return file['id']
 
     # If no hits update files and try again
-    refreshFileList(credentials, type)
+    refresh_file_list(credentials, type)
     for file in files[type]['response']:
-        if file['name'] == fileName:
+        if file['name'] == file_name:
             return file['id']
 
     # If no hists after update, return None
     return None
 
 
-def getTaskId(credentials, taskId):
-    response = doRestCall(credentials, GET, "/api/v1/task/" + taskId)
+def get_task_id(credentials, task_id):
+    response = make_rest_call(credentials, GET, "/api/v1/task/" + task_id)
     if(not response):
-        return {'isError': True, 'failureReason': 'Unable to retrieve TaskId'}
+        return {'isError': True, 'failureReason': 'Unable to retrieve task_id'}
     else:
-        # IPython.embed()
-        retryCount = 0
-        while ('endTime' not in response["response"]) and retryCount < 10:
+        retry_count = 0
+        while ('endTime' not in response["response"]) and retry_count < 10:
             time.sleep(2)
-            response = doRestCall(credentials, GET, "/api/v1/task/" + taskId)
-            retryCount += 1
+            response = make_rest_call(credentials, GET, "/api/v1/task/" + task_id)
+            retry_count += 1
 
         if ('endTime' not in response["response"]):
             return {'isError': True, 'failureReason': 'Task did not complete in 20 seconds'}
@@ -134,18 +130,18 @@ def getTaskId(credentials, taskId):
             return response["response"]
 
 
-class pnpProject:
+class PnpProject:
     def __init__(self, credentials):
         self.id = None
         self.error = False
-        self.errorReason = ''
-        self.deviceList = {}
+        self.error_reason = ''
+        self.device_list = {}
         self.credentials = credentials
         self.server = credentials['server']
         self.ticket = credentials['ticket']
 
 
-    def createProject(self, projectParameters):
+    def create_project(self, projectParameters):
         """ projectParameters needs to be a dictionary of the following format (not all fields required):
 
             projectParameters {
@@ -163,46 +159,46 @@ class pnpProject:
             installerUserID (string, optional): Installer user ID
             }
         """
-        response = doRestCall(self.credentials, POST, "/api/v1/pnp-project", [projectParameters])
-        taskStatus = getTaskId(self.credentials, response['response']['taskId'])
+        response = make_rest_call(self.credentials, POST, "/api/v1/pnp-project", [projectParameters])
+        task_status = get_task_id(self.credentials, response['response']['taskId'])
 
-        if (taskStatus['isError']):
+        if (task_status['isError']):
             self.id = None
             self.error = True
-            self.errorReason = taskStatus['failureReason']
+            self.error_reason = task_status['failureReason']
             return None
         else:
-            if taskStatus['progress'].find('siteId'):
-                progress_json = ast.literal_eval(taskStatus['progress'])
+            if task_status['progress'].find('siteId'):
+                progress_json = ast.literal_eval(task_status['progress'])
                 self.id = progress_json['siteId']
-                self.getProjectById(self.id, False)
+                self.get_project_by_id(self.id, False)
                 print "Project Created: " + self.siteName + ' (' + self.id + ')'
 
-    def addDevice(self, deviceParameters):
-        device = pnpDevice()
-        device.createDevice(deviceParameters, self)
+    def add_device(self, device_parameters):
+        device = PnpDevice()
+        device.create_device(device_parameters, self)
         if device.error:
-            print 'Error Adding Device to Project: ' + device.errorReason + '(Device Name: ' + deviceParameters['hostName'] + ')'
+            print 'Error Adding Device to Project: ' + device.error_reason + '(Device Name: ' + device_parameters['hostName'] + ')'
         else:
-            self.deviceList[device.hostName] = device
+            self.device_list[device.hostName] = device
 
-    def getDeviceByName(self, name):
-        if name in self.deviceList:
-            return self.deviceList[name]
+    def get_device_by_name(self, name):
+        if name in self.device_list:
+            return self.device_list[name]
         else:
             print 'Error: Device Name not in Project'
             return None
 
-    def getDeviceById(self, id):
-        for device in self.deviceList:
-            if self.deviceList[device].id == id:
-                return self.deviceList[device]
+    def get_device_by_id(self, id):
+        for device in self.device_list:
+            if self.device_list[device].id == id:
+                return self.device_list[device]
 
         print 'Error: Unable to locate device with that Id'
         return None
 
-    def getProjectByName(self, name):
-        response = doRestCall(self.credentials, GET, "/api/v1/pnp-project?offset=1&limit=500")
+    def get_project_by_name(self, name):
+        response = make_rest_call(self.credentials, GET, "/api/v1/pnp-project?offset=1&limit=500")
         value = response['response']
         if 'errorCode' in value:
             print "Error: Unable to get Project: " + value['message'] + ' (' + value['detail'] + ')'
@@ -210,13 +206,13 @@ class pnpProject:
 
         for project in value:
             if project['siteName'] == name:
-                return self.getProjectById(project['id'])
+                return self.get_project_by_id(project['id'])
 
         print "Unable to locate Project: " + name
         return None
 
-    def getProjectById(self, id, getDevices=True):
-        response = doRestCall(self.credentials, GET, "/api/v1/pnp-project/" + id)
+    def get_project_by_id(self, id, getDevices=True):
+        response = make_rest_call(self.credentials, GET, "/api/v1/pnp-project/" + id)
         value = response['response']
         if 'errorCode' in value:
             print "Error: Unable to get Project: " + value['message'] + ' (' + value['detail'] + ')'
@@ -235,26 +231,26 @@ class pnpProject:
         if 'installerUserID' in value: self.installerUserID = value['installerUserID']
 
         if getDevices and self.deviceCount > 0:
-            response = doRestCall(self.credentials, GET, '/api/v1/pnp-project/' + id + '/device?offset=1&limit=500')
+            response = make_rest_call(self.credentials, GET, '/api/v1/pnp-project/' + id + '/device?offset=1&limit=500')
             for deviceDetail in response['response']:
-                device = pnpDevice()
+                device = PnpDevice()
                 if 'errorCode' in deviceDetail:
                     print "Error: Unable to get Devices: " + deviceDetail['message'] + ' (' + deviceDetail['detail'] + ')'
                     return None
 
-                device.populateDeviceFromAPIC(None, self, deviceDetail)
-                self.deviceList[device.hostName] = device
+                device.populate_device_from_apic(None, self, deviceDetail)
+                self.device_list[device.hostName] = device
 
 
-class pnpDevice:
+class PnpDevice:
     def __init__(self):
         self.id = None
         self.error = False
-        self.errorReason = ''
+        self.error_reason = ''
 
-    def createDevice(self, deviceParameters, project):
-        """ deviceParameters needs to be a dictionary of the following format (not all fields required):
-        deviceParameters {
+    def create_device(self, device_parameters, project):
+        """ device_parameters needs to be a dictionary of the following format (not all fields required):
+        device_parameters {
             serialNumber (string): Serial number,
             id (string): ID of device,
             site (string, optional): Site to which device belongs if auto-provisioned,
@@ -279,26 +275,24 @@ class pnpDevice:
             connetedToLocationGeoAddr (string, optional)
         }
         """
-        response = doRestCall(project.credentials, POST, "/api/v1/pnp-project/" + project.id + "/device", [deviceParameters])
-        taskStatus = getTaskId(project.credentials, response['response']['taskId'])
-        # if DEBUG: print taskStatus
-        # IPython.embed()
+        response = make_rest_call(project.credentials, POST, "/api/v1/pnp-project/" + project.id + "/device", [device_parameters])
+        task_status = get_task_id(project.credentials, response['response']['taskId'])
 
-        if (taskStatus['isError']):
+        if (task_status['isError']):
             self.error = True
-            self.errorReason = taskStatus['failureReason']
+            self.error_reason = task_status['failureReason']
             return None
         else:
-            if taskStatus['progress'].find('ruleId'):
-                progress_json = ast.literal_eval(taskStatus['progress'])
+            if task_status['progress'].find('ruleId'):
+                progress_json = ast.literal_eval(task_status['progress'])
                 self.id = progress_json['ruleId']
                 self.projectId = project.id
-                self.populateDeviceFromAPIC(self.id, project)
+                self.populate_device_from_apic(self.id, project)
                 print "Device Added to Project: " + self.hostName + ' (' + self.id + ') added to Project ' + project.siteName + ' (' + project.id + ')'
 
-    def populateDeviceFromAPIC(self, deviceId, project, deviceDetail=None):
+    def populate_device_from_apic(self, deviceId, project, deviceDetail=None):
         if deviceId is not None and deviceDetail is None:
-            response = doRestCall(project.credentials, GET, '/api/v1/pnp-project/' + self.projectId + '/device?offset=1&limit=500')
+            response = make_rest_call(project.credentials, GET, '/api/v1/pnp-project/' + self.projectId + '/device?offset=1&limit=500')
             for devicesDetail in response['response']:
                 if 'id' in devicesDetail:
                     if deviceId == devicesDetail['id']:
@@ -337,12 +331,10 @@ class pnpDevice:
 
 def main():
     credentials = login(username='admin', password='password', server='1.1.1.1')
-    #credentials['ticket'] = getServiceTicket(credentials['username'], credentials['password'], credentials['server'])
 
     myProjectDef = {'siteName': 'myProject'}
 
-
-    IMAGE_ID = getFileIdByName(credentials, 'c2960x-universalk9-mz.152-2.E3.bin', 'image')
+    IMAGE_ID = get_file_id_by_name(credentials, 'c2960x-universalk9-mz.152-2.E3.bin', 'image')
     PLATFORM = 'WS-C2960X-48FPS'
 
     devices = {
@@ -351,22 +343,20 @@ def main():
         'switch3': {"imageId": IMAGE_ID, "platformId": PLATFORM, "configId": None, "hostName": "switch3"},
     }
 
-    newProject = pnpProject(credentials)
-    newProject.createProject(myProjectDef)
+    newProject = PnpProject(credentials)
+    newProject.create_project(myProjectDef)
     if newProject.error:
-        print "Error Creating Project: " + newProject.errorReason
+        print "Error Creating Project: " + newProject.error_reason
         quit()
 
 
     for device in devices:
-        devices[device]['configId'] = getFileIdByName(credentials, devices[device]['hostName'])
+        devices[device]['configId'] = get_file_id_by_name(credentials, devices[device]['hostName'])
         # If .txt extension needed:
-        # devices[device]['configId'] = getFileIdByName(credentials, devices[device]['hostName'] + '.txt')
+        # devices[device]['configId'] = get_file_id_by_name(credentials, devices[device]['hostName'] + '.txt')
         if devices[device]['configId'] is None:
             print 'WARNING: Creating device ' + devices[device]['hostName'] + ' without a config file!!!'
-        newProject.addDevice(devices[device])
-
-    # IPython.embed()
+        newProject.add_device(devices[device])
 
 
 if __name__ == "__main__":
