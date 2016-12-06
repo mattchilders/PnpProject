@@ -1,6 +1,6 @@
 # PnpProject
- See main() for creating a new project with devices..
-
+PnpProject is a python class for creating and modifying Plug-n-Play Projects on APIC-EM.  The goal was to make a simple interface to programatically create/update a project and devices, as well as access device information, such as status and error states.
+See main() for example of how to create a new project and populate with devices..
 
 # ###############
 #Get an existing Project:
