@@ -17,7 +17,10 @@ deviceList is a property of the pnpProject class that keeps a dictionary with th
 {u'switch1': <__main__.pnpDevice instance at 0x10e235f38>, u'switch2': <__main__.pnpDevice instance at 0x10e2431b8>, u'switch3': <__main__.pnpDevice instance at 0x10e243098>}
 >>>
 >>>
- access pnpDevice class via the deviceList Property:
+```
+
+Access pnpDevice class via the deviceList Property:
+```python
 >>> proj.deviceList['switch1'].hostName
 u'switch1'
 >>> proj.deviceList['switch1'].configId
@@ -31,8 +34,10 @@ u'f439bbc9-a73f-45e9-88f0-11f86152cd08'
 ```python
 >>> proj.deviceCount
 9
->>>
- getDeviceByName and getDeviceById are methods of pnpProject that return the pnpDevice object in the Project
+```
+
+getDeviceByName and getDeviceById are methods of pnpProject that return the pnpDevice object in the Project
+```python
 >>> proj.getDeviceByName('switch1').id
 u'aa5550b6-3df0-468f-9cae-5ab4c2136b37'
 >>> proj.getDeviceById('aa5550b6-3df0-468f-9cae-5ab4c2136b37').hostName
@@ -77,7 +82,10 @@ getFileByName function takes a file name and returns the id - by default it will
 u'cb87c80b-9011-433f-9275-9e5c92897f0a'
 >>>
 >>>
- To get an image id, pass the 'image' attribute along with the file name:
+```
+
+To get an image id, pass the 'image' attribute along with the file name:
+```python
 >>> getFileIdByName('c2960x-universalk9-mz.152-2.E3.bin', 'image')
 u'f439bbc9-a73f-45e9-88f0-11f86152cd08'
 >>> getFileIdByName('c2960x-universalk9-mz.152-2.E3.bin')
