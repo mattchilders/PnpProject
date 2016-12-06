@@ -9,8 +9,8 @@ import ast
 DEBUG = False
 requests.packages.urllib3.disable_warnings()
 
-GET = "get"
-POST = "post"
+GET = 'get'
+POST = 'post'
 files = {'config': None, 'image': None}
 
 
@@ -18,11 +18,11 @@ def login(username, password, server):
     """ Service Ticket is used for authorization for all REST Calls throughout the script
     """
     ticket = None
-    payload = {"username": username, "password": password}
-    url = "https://" + server + "/api/v1/ticket"
+    payload = {'username': username, 'password': password}
+    url = 'https://' + server + '/api/v1/ticket'
 
     # Content type must be included in the header
-    header = {"content-type": "application/json"}
+    header = {'content-type': 'application/json'}
 
     # Format the payload to JSON and add to the data.  Include the header in the call.
     # SSL certification is turned off, but should be active in production environments
@@ -30,12 +30,12 @@ def login(username, password, server):
 
     # Check if a response was received. If not, print(an error message.)
     if(not response):
-        print(("No data returned! " + url))
+        print(('No data returned! ' + url))
         return None
     else:
         # Data received.  Get the ticket and print(to screen.)
         r_json = response.json()
-        ticket = r_json["response"]["serviceTicket"]
+        ticket = r_json['response']['serviceTicket']
         return {'ticket': ticket, 'server': server}
 
 
@@ -51,7 +51,7 @@ def make_rest_call(credentials, command, url, aData=None):
             payload = json.dumps(aData)
 
         # add the service ticket and content type to the header
-        header = {"X-Auth-Token": credentials['ticket'], "content-type": "application/json"}
+        header = {'X-Auth-Token': credentials['ticket'], 'content-type': 'application/json'}
         if(command == GET):
             r = requests.get(api_url, data=payload, headers=header, verify=False)
             if DEBUG:
@@ -63,16 +63,16 @@ def make_rest_call(credentials, command, url, aData=None):
                 print(url, payload, header)
         else:
             # if the command is not GET or POST we don't handle it.
-            print(("Unknown command!"))
+            print(('Unknown command!'))
             return None
 
         # if no data is returned print(a message; otherwise print(data to the screen)
         if(not r):
-            print("No data returned! " + url)
+            print('No data returned! ' + url)
             return None
         else:
             if DEBUG:
-                print(("Returned status code: %d" % r.status_code))
+                print(('Returned status code: %d' % r.status_code))
 
         # put into dictionary format
         response_json = r.json()
@@ -81,7 +81,7 @@ def make_rest_call(credentials, command, url, aData=None):
     except:
         err = sys.exc_info()[0]
         msg_det = sys.exc_info()[1]
-        print("Error: %s  Details: %s StackTrace: %s" %
+        print('Error: %s  Details: %s StackTrace: %s' %
               (err, msg_det, traceback.format_exc()))
 
 
@@ -89,9 +89,9 @@ def refresh_file_list(credentials, type='config'):
     if type != 'config' and type != 'image':
         return None
     if type == 'config':
-        files[type] = make_rest_call(credentials, GET, "/api/v1/file/namespace/config")
+        files[type] = make_rest_call(credentials, GET, '/api/v1/file/namespace/config')
     elif type == 'image':
-        files[type] = make_rest_call(credentials, GET, "/api/v1/file/namespace/image")
+        files[type] = make_rest_call(credentials, GET, '/api/v1/file/namespace/image')
 
 
 def get_file_id_by_name(credentials, file_name, type='config'):
@@ -114,20 +114,20 @@ def get_file_id_by_name(credentials, file_name, type='config'):
 
 
 def get_task_id(credentials, task_id):
-    response = make_rest_call(credentials, GET, "/api/v1/task/" + task_id)
+    response = make_rest_call(credentials, GET, '/api/v1/task/' + task_id)
     if(not response):
         return {'isError': True, 'failureReason': 'Unable to retrieve task_id'}
     else:
         retry_count = 0
-        while ('endTime' not in response["response"]) and retry_count < 10:
+        while ('endTime' not in response['response']) and retry_count < 10:
             time.sleep(2)
-            response = make_rest_call(credentials, GET, "/api/v1/task/" + task_id)
+            response = make_rest_call(credentials, GET, '/api/v1/task/' + task_id)
             retry_count += 1
 
-        if ('endTime' not in response["response"]):
+        if ('endTime' not in response['response']):
             return {'isError': True, 'failureReason': 'Task did not complete in 20 seconds'}
         else:
-            return response["response"]
+            return response['response']
 
 
 class PnpProject:
@@ -159,7 +159,7 @@ class PnpProject:
             installerUserID (string, optional): Installer user ID
             }
         """
-        response = make_rest_call(self.credentials, POST, "/api/v1/pnp-project", [projectParameters])
+        response = make_rest_call(self.credentials, POST, '/api/v1/pnp-project', [projectParameters])
         task_status = get_task_id(self.credentials, response['response']['taskId'])
 
         if (task_status['isError']):
@@ -172,7 +172,7 @@ class PnpProject:
                 progress_json = ast.literal_eval(task_status['progress'])
                 self.id = progress_json['siteId']
                 self.get_project_by_id(self.id, False)
-                print "Project Created: " + self.siteName + ' (' + self.id + ')'
+                print 'Project Created: ' + self.siteName + ' (' + self.id + ')'
 
     def add_device(self, device_parameters):
         device = PnpDevice()
@@ -181,6 +181,7 @@ class PnpProject:
             print 'Error Adding Device to Project: ' + device.error_reason + '(Device Name: ' + device_parameters['hostName'] + ')'
         else:
             self.device_list[device.hostName] = device
+            self.get_project_by_id(self.id, False)
 
     def get_device_by_name(self, name):
         if name in self.device_list:
@@ -198,24 +199,24 @@ class PnpProject:
         return None
 
     def get_project_by_name(self, name):
-        response = make_rest_call(self.credentials, GET, "/api/v1/pnp-project?offset=1&limit=500")
+        response = make_rest_call(self.credentials, GET, '/api/v1/pnp-project?offset=1&limit=500')
         value = response['response']
         if 'errorCode' in value:
-            print "Error: Unable to get Project: " + value['message'] + ' (' + value['detail'] + ')'
+            print 'Error: Unable to get Project: ' + value['message'] + ' (' + value['detail'] + ')'
             return None
 
         for project in value:
             if project['siteName'] == name:
                 return self.get_project_by_id(project['id'])
 
-        print "Unable to locate Project: " + name
+        print 'Unable to locate Project: ' + name
         return None
 
-    def get_project_by_id(self, id, getDevices=True):
-        response = make_rest_call(self.credentials, GET, "/api/v1/pnp-project/" + id)
+    def get_project_by_id(self, id, get_devices=True):
+        response = make_rest_call(self.credentials, GET, '/api/v1/pnp-project/' + id)
         value = response['response']
         if 'errorCode' in value:
-            print "Error: Unable to get Project: " + value['message'] + ' (' + value['detail'] + ')'
+            print 'Error: Unable to get Project: ' + value['message'] + ' (' + value['detail'] + ')'
             return None
 
         self.id = id
@@ -231,12 +232,12 @@ class PnpProject:
         if 'deviceLastUpdate' in value: self.deviceLastUpdate = value['deviceLastUpdate']
         if 'installerUserID' in value: self.installerUserID = value['installerUserID']
 
-        if getDevices and self.deviceCount > 0:
+        if get_devices and self.deviceCount > 0:
             response = make_rest_call(self.credentials, GET, '/api/v1/pnp-project/' + id + '/device?offset=1&limit=500')
             for deviceDetail in response['response']:
                 device = PnpDevice()
                 if 'errorCode' in deviceDetail:
-                    print "Error: Unable to get Devices: " + deviceDetail['message'] + ' (' + deviceDetail['detail'] + ')'
+                    print 'Error: Unable to get Devices: ' + deviceDetail['message'] + ' (' + deviceDetail['detail'] + ')'
                     return None
 
                 device.populate_device_from_apic(None, self, deviceDetail)
@@ -276,7 +277,7 @@ class PnpDevice:
             connetedToLocationGeoAddr (string, optional)
         }
         """
-        response = make_rest_call(project.credentials, POST, "/api/v1/pnp-project/" + project.id + "/device", [device_parameters])
+        response = make_rest_call(project.credentials, POST, '/api/v1/pnp-project/' + project.id + '/device', [device_parameters])
         task_status = get_task_id(project.credentials, response['response']['taskId'])
 
         if (task_status['isError']):
@@ -289,7 +290,7 @@ class PnpDevice:
                 self.id = progress_json['ruleId']
                 self.projectId = project.id
                 self.populate_device_from_apic(self.id, project)
-                print "Device Added to Project: " + self.hostName + ' (' + self.id + ') added to Project ' + project.siteName + ' (' + project.id + ')'
+                print 'Device Added to Project: ' + self.hostName + ' (' + self.id + ') added to Project ' + project.siteName + ' (' + project.id + ')'
 
     def populate_device_from_apic(self, deviceId, project, deviceDetail=None):
         if deviceId is not None and deviceDetail is None:
@@ -339,26 +340,26 @@ def main():
     PLATFORM = 'WS-C2960X-48FPS'
 
     devices = {
-        'switch1': {"imageId": IMAGE_ID, "platformId": PLATFORM, "configId": None, "hostName": "switch1"},
-        'switch2': {"imageId": IMAGE_ID, "platformId": PLATFORM, "configId": None, "hostName": "switch2"},
-        'switch3': {"imageId": IMAGE_ID, "platformId": PLATFORM, "configId": None, "hostName": "switch3"},
+        'switch1': {'imageId': IMAGE_ID, 'platformId': PLATFORM, 'configId': None, 'hostName': 'switch1'},
+        'switch2': {'imageId': IMAGE_ID, 'platformId': PLATFORM, 'configId': None, 'hostName': 'switch2'},
+        'switch3': {'imageId': IMAGE_ID, 'platformId': PLATFORM, 'configId': None, 'hostName': 'switch3'},
     }
 
     newProject = PnpProject(credentials)
     newProject.create_project(myProjectDef)
     if newProject.error:
-        print "Error Creating Project: " + newProject.error_reason
+        print 'Error Creating Project: ' + newProject.error_reason
         quit()
 
 
     for device in devices:
-        devices[device]['configId'] = get_file_id_by_name(credentials, devices[device]['hostName'])
+        #devices[device]['configId'] = get_file_id_by_name(credentials, devices[device]['hostName'])
         # If .txt extension needed:
-        # devices[device]['configId'] = get_file_id_by_name(credentials, devices[device]['hostName'] + '.txt')
+        devices[device]['configId'] = get_file_id_by_name(credentials, devices[device]['hostName'] + '.txt')
         if devices[device]['configId'] is None:
             print 'WARNING: Creating device ' + devices[device]['hostName'] + ' without a config file!!!'
         newProject.add_device(devices[device])
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

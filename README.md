@@ -4,7 +4,7 @@ See main() for example of how to create a new project and populate with devices.
 
 # ###############
 #Get an existing Project:
-Instantiate the Project and then call "get_project_by_name" or "get_project_by_id"
+Instantiate the Project and then call 'get_project_by_name' or 'get_project_by_id'
 ```python
 >>> credentials = login(username='admin', password='password', server='1.1.1.1')
 >>>
@@ -58,7 +58,7 @@ u'switch1'
 ```python
 >>> image_id = get_file_id_by_name(credentials, 'cat3k_caa-universalk9.SPA.03.07.04.E.152-3.E4.bin', 'image')
 >>> config_id = get_file_id_by_name(credentials, 'switch4.txt')
->>> device_definition = {"imageId": image_id, "platformId": 'WS-C3650-48PQ', "configId": config_id, "hostName": "switch4"}
+>>> device_definition = {'imageId': image_id, 'platformId': 'WS-C3650-48PQ', 'configId': config_id, 'hostName': 'switch4'}
 >>> proj.add_device(device_definition)
 Device Added to Project: switch4 (3ecc60a8-19a8-41c9-977d-f0e39383b953) added to Project myProject (be358095-2f6a-4e47-8dcd-e6b9bdf66ecc)
 ```
