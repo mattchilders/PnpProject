@@ -6,7 +6,7 @@ See main() for example of how to create a new project and populate with devices.
 ###Get an existing Project:
 Instantiate the Project and then call 'get_project_by_name' or 'get_project_by_id'
 ```python
->>> credentials = login(username='admin', password='password', server='1.1.1.1')
+>>> credentials = pnp_login(username='admin', password='password', server='1.1.1.1')
 >>>
 >>> proj = PnpProject(credentials)
 >>> proj.get_project_by_name('myProject')
@@ -72,7 +72,7 @@ Device Added to Project: switch4 (3ecc60a8-19a8-41c9-977d-f0e39383b953) added to
 ### Create a Project with specific settings (like tftpserver and path...):
 Instantiate the Project and create the definition of the project (camelCase for Project Definitions to maintain consistency with APIC-EM naming)
 ```python
->>> credentials = login(username='admin', password='password', server='1.1.1.1')
+>>> credentials = pnp_login(username='admin', password='password', server='1.1.1.1')
 >>> proj = PnpProject(credentials)
 >>> projectDef = {'siteName' : 'TFTPProject', 'tftpServer' : '1.1.1.1', 'tftpPath' : '/files/'}
 ```
@@ -91,12 +91,20 @@ u'1.1.1.1'
 u'/files/'
 ```
  
+
+# ###############
+## Working with files
+PnpFileHandler class has been added for working with files
+```python
+>>> credentials = pnp_login(username='admin', password='password', server='1.1.1.1')
+>>> fh = PnpFileHandler(credentials)
+```
+
 # ###############
 ### Get File Id's in PnP's file repository:
-
-get_file_id_by_name function takes a file name and returns the id - by default it will search the config file store
+get_file_id_by_name function takes a file name and returns the id - by default it will search the config file namespace
 ```python
->>> get_file_id_by_name('switch1')
+>>> fh.get_file_id_by_name('switch1')
 u'cb87c80b-9011-433f-9275-9e5c92897f0a'
 >>>
 >>>
@@ -104,8 +112,18 @@ u'cb87c80b-9011-433f-9275-9e5c92897f0a'
 
 To get an image id, pass the 'image' attribute along with the file name:
 ```python
->>> get_file_id_by_name('c2960x-universalk9-mz.152-2.E3.bin', 'image')
+>>> fh.get_file_id_by_name('c2960x-universalk9-mz.152-2.E3.bin', 'image')
 u'f439bbc9-a73f-45e9-88f0-11f86152cd08'
+```
+
+# ###############
+### Upload a file, by default it uses the config namespace
+```python
+>>> print fh.upload_file('/path/to/file/test2.txt')
+388fdd4b-93e0-4126-a83d-3b243edc7d51
+>>>
+>>> fh.get_file_name_by_id('388fdd4b-93e0-4126-a83d-3b243edc7d51')
+u'test2.txt'
 ```
 
 # ###############
