@@ -3,6 +3,7 @@ import time
 import json
 import requests
 import sys
+import os
 import traceback
 import ast
 
@@ -11,10 +12,8 @@ requests.packages.urllib3.disable_warnings()
 
 GET = 'get'
 POST = 'post'
-files = {'config': None, 'image': None}
 
-
-def login(username, password, server):
+def pnp_login(username, password, server):
     """ Service Ticket is used for authorization for all REST Calls throughout the script
     """
     ticket = None
@@ -39,7 +38,7 @@ def login(username, password, server):
         return {'ticket': ticket, 'server': server}
 
 
-def make_rest_call(credentials, command, url, aData=None):
+def make_rest_call(credentials, command, url, files=None, aData=None):
     """ make_rest_call is for simplifying REST calls to APIC-EM
     """
     response_json = None
@@ -51,16 +50,23 @@ def make_rest_call(credentials, command, url, aData=None):
             payload = json.dumps(aData)
 
         # add the service ticket and content type to the header
-        header = {'X-Auth-Token': credentials['ticket'], 'content-type': 'application/json'}
+        if files is not None:
+            header = {'X-Auth-Token': credentials['ticket']}
+        else:
+            header = {'X-Auth-Token': credentials['ticket'], 'content-type': 'application/json'}
+
         if(command == GET):
             r = requests.get(api_url, data=payload, headers=header, verify=False)
             if DEBUG:
-                print(url, payload, header)
+                print(api_url, payload, header)
 
         elif(command == POST):
-            r = requests.post(api_url, data=payload, headers=header, verify=False)
+            if files is not None:
+                r = requests.post(api_url, data=payload, headers=header, files=files, verify=False)            
+            else:
+                r = requests.post(api_url, data=payload, headers=header, verify=False)
             if DEBUG:
-                print(url, payload, header)
+                print(api_url, payload, header)
         else:
             # if the command is not GET or POST we don't handle it.
             print(('Unknown command!'))
@@ -85,33 +91,6 @@ def make_rest_call(credentials, command, url, aData=None):
               (err, msg_det, traceback.format_exc()))
 
 
-def refresh_file_list(credentials, type='config'):
-    if type != 'config' and type != 'image':
-        return None
-    if type == 'config':
-        files[type] = make_rest_call(credentials, GET, '/api/v1/file/namespace/config')
-    elif type == 'image':
-        files[type] = make_rest_call(credentials, GET, '/api/v1/file/namespace/image')
-
-
-def get_file_id_by_name(credentials, file_name, type='config'):
-    if type != 'config' and type != 'image':
-        return None
-    if files[type] is None:
-        refresh_file_list(credentials, type)
-    for file in files[type]['response']:
-        if file['name'] == file_name:
-            return file['id']
-
-    # If no hits update files and try again
-    refresh_file_list(credentials, type)
-    for file in files[type]['response']:
-        if file['name'] == file_name:
-            return file['id']
-
-    # If no hists after update, return None
-    return None
-
 
 def get_task_id(credentials, task_id):
     response = make_rest_call(credentials, GET, '/api/v1/task/' + task_id)
@@ -128,6 +107,70 @@ def get_task_id(credentials, task_id):
             return {'isError': True, 'failureReason': 'Task did not complete in 20 seconds'}
         else:
             return response['response']
+
+class PnpFileHandler:
+    def __init__(self, credentials):
+        self.credentials = credentials
+        self.files = {'config': None, 'image': None}
+
+
+    def refresh_file_list(self, type='config'):
+        if type != 'config' and type != 'image':
+            return None
+        if type == 'config':
+            self.files[type] = make_rest_call(self.credentials, GET, '/api/v1/file/namespace/config')
+        elif type == 'image':
+            self.files[type] = make_rest_call(self.credentials, GET, '/api/v1/file/namespace/image')
+
+
+    def get_file_id_by_name(self, file_name, type='config'):
+        if type != 'config' and type != 'image':
+            return None
+        if self.files[type] is None:
+            self.refresh_file_list(type)
+        for file in self.files[type]['response']:
+            if file['name'] == file_name:
+                return file['id']
+
+        # If no hits update files and try again
+        self.refresh_file_list(type)
+        for file in self.files[type]['response']:
+            if file['name'] == file_name:
+                return file['id']
+
+        # If no hists after update, return None
+        return None
+
+
+    def get_file_name_by_id(self, id, type='config'):
+        if type != 'config' and type != 'image':
+            return None
+        if self.files[type] is None:
+            self.refresh_file_list(type)
+        for file in self.files[type]['response']:
+            if file['id'] == id:
+                return file['name']
+
+        # If no hits update files and try again
+        self.refresh_file_list(type)
+        for file in self.files[type]['response']:
+            if file['id'] == id:
+                return file['name']
+
+        # If no hists after update, return None
+        return None
+
+
+    def upload_file(self, path, type='config'):
+        if type != 'config' and type != 'image':
+            return None
+        if not os.path.isfile(path):
+            return None
+        
+        file = {'file': open(path, 'rb')}
+        response = make_rest_call(self.credentials, 'post', '/api/v1/file/'+type, files=file)
+        return response['response']['id']
+
 
 
 class PnpProject:
@@ -182,7 +225,7 @@ class PnpProject:
                 progress_json = ast.literal_eval(task_status['progress'])
                 self.id = progress_json['siteId']
                 self.get_project_by_id(self.id, False)
-                print 'Project Created: ' + self.siteName + ' (' + self.id + ')'
+                return self.id
 
     def add_device(self, device_parameters):
         device = PnpDevice()
@@ -370,11 +413,12 @@ class PnpDevice:
 
 
 def main():
-    credentials = login(username='admin', password='password', server='1.1.1.1')
+    credentials = pnp_login(username='admin', password='password', server='1.1.1.1')
 
+    fh = PnpFileHandler(credentials)
     myProjectDef = {'siteName': 'myProject'}
 
-    IMAGE_ID = get_file_id_by_name(credentials, 'c2960x-universalk9-mz.152-2.E3.bin', 'image')
+    IMAGE_ID = fh.get_file_id_by_name('c2960x-universalk9-mz.152-2.E3.bin', 'image')
     PLATFORM = 'WS-C2960X-48FPS'
 
     devices = {
@@ -391,9 +435,9 @@ def main():
 
 
     for device in devices:
-        #devices[device]['configId'] = get_file_id_by_name(credentials, devices[device]['hostName'])
+        #devices[device]['configId'] = fh.get_file_id_by_name(devices[device]['hostName'])
         # If .txt extension needed:
-        devices[device]['configId'] = get_file_id_by_name(credentials, devices[device]['hostName'] + '.txt')
+        devices[device]['configId'] = fh.get_file_id_by_name(devices[device]['hostName'] + '.txt')
         if devices[device]['configId'] is None:
             print 'WARNING: Creating device ' + devices[device]['hostName'] + ' without a config file!!!'
         newProject.add_device(devices[device])
