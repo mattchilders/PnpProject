@@ -286,7 +286,7 @@ class PnpDevice:
         self.connectedToDeviceHostName = None
         self.connetedToLocationGeoAddr = None
         self.configPreference = None
-self.attributeInfo = None
+        self.attributeInfo = None
 
     def create_device(self, device_parameters, project):
         """ device_parameters needs to be a dictionary of the following format (not all fields required):
