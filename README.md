@@ -47,10 +47,15 @@ u'switch1'
 ```
 
 # ###############
-###Methods and Properties of the pnpDevice class:
+###Methods and Properties of the PnpProject and PnpDevice classes:
 ```python
+>>> dir(proj)
+['__doc__', '__init__', '__module__', 'add_device', 'create_project', 'credentials', 'deviceCount', 'deviceLastUpdate', 'device_list', 'error', 'error_reason', 'get_device_by_id', 'get_device_by_name', 'get_project_by_id', 'get_project_by_name', 'id', 'installerUserID', 'note', 'pendingDeviceCount', 'provisionedBy', 'provisionedOn', 'siteName', 'state', 'tftpPath', 'tftpServer']
+>>>
+>>>
 >>> dir(proj.get_device_by_name('switch1'))
-['__doc__', '__init__', '__module__', 'apCount', 'attributeInfo', 'create_device', 'error', 'error_reason', 'hostName', 'id', 'imageId', 'isMobilityController', 'pkiEnabled', 'platformId', 'populate_device_from_apic', 'site', 'state', 'stateDisplay', 'sudiRequired']
+['__doc__', '__init__', '__module__', 'apCount', 'attributeInfo', 'authStatus', 'bootStrapId', 'configId', 'configPreference', 'connectedToDeviceHostName', 'connectedToDeviceId', 'connectedToPortId', 'connectedToPortName', 'connetedToLocationCivicAddr', 'connetedToLocationGeoAddr', 'create_device', 'deviceId', 'error', 'error_reason', 'hostName', 'id', 'imageId', 'imagePreference', 'isMobilityController', 'lastContact', 'lastStateTransitionTime', 'licenseString', 'pkiEnabled', 'platformId', 'populate_device_from_apic', 'serialNumber', 'site', 'state', 'stateDisplay', 'sudiRequired', 'tag']
+>>>
 ```
 
 # ###############
