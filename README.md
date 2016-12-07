@@ -6,6 +6,7 @@ See main() for example of how to create a new project and populate with devices.
 ###Get an existing Project:
 Instantiate the Project and then call 'get_project_by_name' or 'get_project_by_id'
 ```python
+>>> from PnpProject import *
 >>> credentials = pnp_login(username='admin', password='password', server='1.1.1.1')
 >>>
 >>> proj = PnpProject(credentials)
@@ -106,8 +107,6 @@ get_file_id_by_name function takes a file name and returns the id - by default i
 ```python
 >>> fh.get_file_id_by_name('switch1')
 u'cb87c80b-9011-433f-9275-9e5c92897f0a'
->>>
->>>
 ```
 
 To get an image id, pass the 'image' attribute along with the file name:
