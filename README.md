@@ -117,13 +117,19 @@ u'f439bbc9-a73f-45e9-88f0-11f86152cd08'
 ```
 
 # ###############
-### Upload a file, by default it uses the config namespace
+### Upload a file
 ```python
 >>> print fh.upload_file('/path/to/file/test2.txt')
 388fdd4b-93e0-4126-a83d-3b243edc7d51
 >>>
 >>> fh.get_file_name_by_id('388fdd4b-93e0-4126-a83d-3b243edc7d51')
 u'test2.txt'
+>>>
+>>> print fh.upload_file('/path/to/file/c2951-universalk9-mz.SPA.153-3.M5.bin', 'image')
+ca2d0a60-f3df-4728-a461-2fc050865a94
+>>>
+>>> fh.get_file_name_by_id('ca2d0a60-f3df-4728-a461-2fc050865a94', 'image')
+u'c2951-universalk9-mz.SPA.153-3.M5.bin'
 ```
 
 # ###############
