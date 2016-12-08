@@ -104,7 +104,7 @@ Another way to create projects without using a project definitions dictionary is
 Project Created: TFTPProject (00cdf394-48d7-474a-b4d5-535b51e488d9)
 ```
 
-This method will set the properties of the class and when create project is called, it will automatically create the project definitions dictionary and create the project on the APIC-EM server.  You can also update projects this way after they've been created or loaded from the server:
+This method will set the properties of the class and when create_project is called, it will automatically create the project definitions dictionary and create the project on the APIC-EM server.  You can also update projects this way after they've been created or loaded from the server:
 
 ```python
 >>> from PnpProject import *
@@ -118,7 +118,7 @@ This method will set the properties of the class and when create project is call
 >>> proj.update_project()
 ```
  
- modifying the properties of the class will update what's stored locally in memory, and calling the update_project() method will push those changes to the APIC-EM server.
+ modifying the properties of the class will update what's stored locally in memory, and calling the update_project() method will push those changes to the APIC-EM server.  (Note: siteName cannot be updated, even though the REST call will show it is successful)
 
 # ###############
 ## Working with files
