@@ -12,6 +12,8 @@ requests.packages.urllib3.disable_warnings()
 
 GET = 'get'
 POST = 'post'
+PUT = 'put'
+DELETE = 'delete'
 
 def pnp_login(username, password, server):
     """ Service Ticket is used for authorization for all REST Calls throughout the script
@@ -38,7 +40,7 @@ def pnp_login(username, password, server):
         return {'ticket': ticket, 'server': server}
 
 
-def make_rest_call(credentials, command, url, files=None, aData=None):
+def make_rest_call(credentials, command, url, aData=None, files=None):
     """ make_rest_call is for simplifying REST calls to APIC-EM
     """
     response_json = None
@@ -67,6 +69,10 @@ def make_rest_call(credentials, command, url, files=None, aData=None):
                 r = requests.post(api_url, data=payload, headers=header, verify=False)
             if DEBUG:
                 print(api_url, payload, header)
+        elif(command == PUT):
+            r = requests.put(api_url, data=payload, headers=header, verify=False)
+        elif(command == DELETE):
+            r = requests.delete(api_url, data=payload, headers=header, verify=False)            
         else:
             # if the command is not GET or POST we don't handle it.
             print(('Unknown command!'))
@@ -82,7 +88,7 @@ def make_rest_call(credentials, command, url, files=None, aData=None):
 
         # put into dictionary format
         response_json = r.json()
-        # print(response_json)
+        #print(response_json)
         return response_json
     except:
         err = sys.exc_info()[0]
@@ -168,9 +174,19 @@ class PnpFileHandler:
             return None
         
         file = {'file': open(path, 'rb')}
-        response = make_rest_call(self.credentials, 'post', '/api/v1/file/'+type, files=file)
+        response = make_rest_call(self.credentials, POST, '/api/v1/file/'+type, files=file)
         return response['response']['id']
 
+    def delete_file(self, file_id, type='config'):
+        if type != 'config' and type != 'image':
+            return None
+        if self.get_file_name_by_id(file_id, type):
+            response = make_rest_call(self.credentials, DELETE, '/api/v1/pnp-file/'+type+'/'+file_id)
+            task_status = get_task_id(self.credentials, response['response']['taskId'])
+            if (task_status['isError']):
+                return None
+            else:
+                return True
 
 
 class PnpProject:
@@ -194,10 +210,10 @@ class PnpProject:
         self.installerUserID = None
 
 
-    def create_project(self, projectParameters):
-        """ projectParameters needs to be a dictionary of the following format (not all fields required):
+    def create_project(self, project_parameters=None):
+        """ project_parameters needs to be a dictionary of the following format (not all fields required):
 
-            projectParameters {
+            project_parameters {
             state (string, optional): Project state,
             id (string): Project ID,
             provisionedBy (string, optional): User creating the project,
@@ -212,7 +228,10 @@ class PnpProject:
             installerUserID (string, optional): Installer user ID
             }
         """
-        response = make_rest_call(self.credentials, POST, '/api/v1/pnp-project', [projectParameters])
+        if project_parameters is None:
+            project_parameters = self.create_project_parameters()
+
+        response = make_rest_call(self.credentials, POST, '/api/v1/pnp-project', [project_parameters])
         task_status = get_task_id(self.credentials, response['response']['taskId'])
 
         if (task_status['isError']):
@@ -226,6 +245,41 @@ class PnpProject:
                 self.id = progress_json['siteId']
                 self.get_project_by_id(self.id, False)
                 return self.id
+
+    def create_project_parameters(self):
+        project_parameters = {}
+        if self.id is not None: project_parameters['id'] = self.id
+        if self.state is not None: project_parameters['state'] = self.state
+        if self.provisionedBy is not None: project_parameters['provisionedBy'] = self.provisionedBy
+        if self.provisionedOn is not None: project_parameters['provisionedOn'] = self.provisionedOn
+        if self.siteName is not None: project_parameters['siteName'] = self.siteName
+        if self.tftpServer is not None: project_parameters['tftpServer'] = self.tftpServer
+        if self.tftpPath is not None: project_parameters['tftpPath'] = self.tftpPath
+        if self.note is not None: project_parameters['note'] = self.note
+        if self.deviceCount is not None: project_parameters['deviceCount'] = self.deviceCount
+        if self.pendingDeviceCount is not None: project_parameters['pendingDeviceCount'] = self.pendingDeviceCount
+        if self.deviceLastUpdate is not None: project_parameters['deviceLastUpdate'] = self.deviceLastUpdate
+        if self.installerUserID is not None: project_parameters['installerUserID'] = self.installerUserID
+        print project_parameters
+        return project_parameters
+
+
+    def update_project(self, project_parameters=None):
+        if project_parameters is None:
+            project_parameters = self.create_project_parameters()
+
+        response = make_rest_call(self.credentials, PUT, '/api/v1/pnp-project', [project_parameters])
+        task_status = get_task_id(self.credentials, response['response']['taskId'])
+
+        if (task_status['isError']):
+            self.id = None
+            self.error = True
+            self.error_reason = task_status['failureReason']
+            return None
+        else:
+            self.get_project_by_id(self.id, False)
+            return self.id
+
 
     def add_device(self, device_parameters):
         device = PnpDevice()
