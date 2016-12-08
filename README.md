@@ -69,6 +69,7 @@ u'switch1'
 Device Added to Project: switch4 (3ecc60a8-19a8-41c9-977d-f0e39383b953) added to Project myProject (be358095-2f6a-4e47-8dcd-e6b9bdf66ecc)
 ```
 
+
 # ###############
 ### Create a Project with specific settings (like tftpserver and path...):
 Instantiate the Project and create the definition of the project (camelCase for Project Definitions to maintain consistency with APIC-EM naming)
@@ -91,7 +92,33 @@ u'1.1.1.1'
 >>> proj.tftpPath
 u'/files/'
 ```
+
+Another way to create projects without using a project definitions dictionary is as follows:
+```python
+>>> credentials = pnp_login(username='admin', password='password', server='1.1.1.1')
+>>> proj = PnpProject(credentials)
+>>> proj.siteName = 'TFTPProject'
+>>> proj.tftpServer = '1.1.1.1'
+>>> proj.tftpPath = '/files/'
+>>> proj.create_project()
+Project Created: TFTPProject (00cdf394-48d7-474a-b4d5-535b51e488d9)
+```
+
+This method will set the properties of the class and when create project is called, it will automatically create the project definitions dictionary and create the project on the APIC-EM server.  You can also update projects this way after they've been created or loaded from the server:
+
+```python
+>>> from PnpProject import *
+>>> credentials = pnp_login(username='admin', password='password', server='1.1.1.1')
+>>>
+>>> proj = PnpProject(credentials)
+>>> proj.get_project_by_name('TFTPProject')
+>>>
+>>> proj.tftpServer = '2.2.2.2'
+>>> proj.tftpPath = '/new_files/'
+>>> proj.update_project()
+```
  
+ modifying the properties of the class will update what's stored locally in memory, and calling the update_project() method will push those changes to the APIC-EM server.
 
 # ###############
 ## Working with files
