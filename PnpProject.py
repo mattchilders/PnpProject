@@ -75,7 +75,7 @@ def make_rest_call(credentials, command, url, aData=None, files=None):
             r = requests.delete(api_url, data=payload, headers=header, verify=False)            
         else:
             # if the command is not GET or POST we don't handle it.
-            print(('Unknown command!'))
+            print('Unknown command!')
             return None
 
         # if no data is returned print(a message; otherwise print(data to the screen)
@@ -84,7 +84,7 @@ def make_rest_call(credentials, command, url, aData=None, files=None):
             return None
         else:
             if DEBUG:
-                print(('Returned status code: %d' % r.status_code))
+                print('Returned status code: %d' % r.status_code)
 
         # put into dictionary format
         response_json = r.json()
@@ -264,7 +264,6 @@ class PnpProject:
         if self.pendingDeviceCount is not None: project_parameters['pendingDeviceCount'] = self.pendingDeviceCount
         if self.deviceLastUpdate is not None: project_parameters['deviceLastUpdate'] = self.deviceLastUpdate
         if self.installerUserID is not None: project_parameters['installerUserID'] = self.installerUserID
-        print project_parameters
         return project_parameters
 
     def update_project(self, project_parameters=None):
@@ -287,7 +286,7 @@ class PnpProject:
         device = PnpDevice()
         device.create_device(device_parameters, self)
         if device.error:
-            print 'Error Adding Device to Project: ' + device.error_reason + '(Device Name: ' + device_parameters['hostName'] + ')'
+            print('Error Adding Device to Project: ' + device.error_reason + '(Device Name: ' + device_parameters['hostName'] + ')')
         else:
             self.device_list[device.hostName] = device
             self.get_project_by_id(self.id, False)
@@ -296,7 +295,7 @@ class PnpProject:
         if name in self.device_list:
             return self.device_list[name]
         else:
-            print 'Error: Device Name not in Project'
+            print('Error: Device Name not in Project')
             return None
 
     def get_device_by_id(self, id):
@@ -304,28 +303,28 @@ class PnpProject:
             if self.device_list[device].id == id:
                 return self.device_list[device]
 
-        print 'Error: Unable to locate device with that Id'
+        print('Error: Unable to locate device with that Id')
         return None
 
     def get_project_by_name(self, name):
         response = make_rest_call(self.credentials, GET, '/api/v1/pnp-project?offset=1&limit=500')
         value = response['response']
         if 'errorCode' in value:
-            print 'Error: Unable to get Project: ' + value['message'] + ' (' + value['detail'] + ')'
+            print('Error: Unable to get Project: ' + value['message'] + ' (' + value['detail'] + ')')
             return None
 
         for project in value:
             if project['siteName'] == name:
                 return self.get_project_by_id(project['id'])
 
-        print 'Unable to locate Project: ' + name
+        print('Unable to locate Project: ' + name)
         return None
 
     def get_project_by_id(self, id, get_devices=True):
         response = make_rest_call(self.credentials, GET, '/api/v1/pnp-project/' + id)
         value = response['response']
         if 'errorCode' in value:
-            print 'Error: Unable to get Project: ' + value['message'] + ' (' + value['detail'] + ')'
+            print('Error: Unable to get Project: ' + value['message'] + ' (' + value['detail'] + ')')
             return None
 
         self.id = id
@@ -346,7 +345,7 @@ class PnpProject:
             for deviceDetail in response['response']:
                 device = PnpDevice()
                 if 'errorCode' in deviceDetail:
-                    print 'Error: Unable to get Devices: ' + deviceDetail['message'] + ' (' + deviceDetail['detail'] + ')'
+                    print('Error: Unable to get Devices: ' + deviceDetail['message'] + ' (' + deviceDetail['detail'] + ')')
                     return None
 
                 device.populate_device_from_apic(None, self, deviceDetail)
@@ -427,7 +426,7 @@ class PnpDevice:
                 self.id = progress_json['ruleId']
                 self.projectId = project.id
                 self.populate_device_from_apic(self.id, project)
-                print 'Device Added to Project: ' + self.hostName + ' (' + self.id + ') added to Project ' + project.siteName + ' (' + project.id + ')'
+                print('Device Added to Project: ' + self.hostName + ' (' + self.id + ') added to Project ' + project.siteName + ' (' + project.id + ')')
 
     #def create_device_parameters(self):
 
@@ -488,7 +487,7 @@ def main():
     newProject = PnpProject(credentials)
     newProject.create_project(myProjectDef)
     if newProject.error:
-        print 'Error Creating Project: ' + newProject.error_reason
+        print( 'Error Creating Project: ' + newProject.error_reason)
         quit()
 
 
@@ -497,7 +496,7 @@ def main():
         # If .txt extension needed:
         devices[device]['configId'] = fh.get_file_id_by_name(devices[device]['hostName'] + '.txt')
         if devices[device]['configId'] is None:
-            print 'WARNING: Creating device ' + devices[device]['hostName'] + ' without a config file!!!'
+            print('WARNING: Creating device ' + devices[device]['hostName'] + ' without a config file!!!')
         newProject.add_device(devices[device])
 
 
