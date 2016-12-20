@@ -173,7 +173,11 @@ class PnpFileHandler:
         if not os.path.isfile(path):
             return None
         
-        file = {'file': open(path, 'rb')}
+        open_file = open(path, 'rb')
+        if (open_file.name[-3:] == 'txt') or type == 'image':
+            file = {'file': open(path, 'rb')}
+        else:
+            file = {'file': (open_file.name + '.txt', open(path, 'rb'))}
         response = make_rest_call(self.credentials, POST, '/api/v1/file/'+type, files=file)
         return response['response']['id']
 
@@ -263,7 +267,6 @@ class PnpProject:
         print project_parameters
         return project_parameters
 
-
     def update_project(self, project_parameters=None):
         if project_parameters is None:
             project_parameters = self.create_project_parameters()
@@ -279,7 +282,6 @@ class PnpProject:
         else:
             self.get_project_by_id(self.id, False)
             return self.id
-
 
     def add_device(self, device_parameters):
         device = PnpDevice()
@@ -426,6 +428,8 @@ class PnpDevice:
                 self.projectId = project.id
                 self.populate_device_from_apic(self.id, project)
                 print 'Device Added to Project: ' + self.hostName + ' (' + self.id + ') added to Project ' + project.siteName + ' (' + project.id + ')'
+
+    #def create_device_parameters(self):
 
     def populate_device_from_apic(self, deviceId, project, deviceDetail=None):
         if deviceId is not None and deviceDetail is None:
