@@ -177,7 +177,7 @@ class PnpFileHandler:
         if (open_file.name[-3:] == 'txt') or type == 'image':
             file = {'file': open(path, 'rb')}
         else:
-            file = {'file': (open_file.name + '.txt', open(path, 'rb'))}
+            file = {'file': (os.path.basename(open_file.name) + '.txt', open(path, 'rb'))}
         response = make_rest_call(self.credentials, POST, '/api/v1/file/'+type, files=file)
         return response['response']['id']
 
