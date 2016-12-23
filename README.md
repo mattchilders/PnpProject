@@ -6,6 +6,8 @@ See main() for example of how to create a new project and populate with devices.
 ###Where to Begin
 When using PnP, a common task is to start with creating a Project, and adding the devices to the project.  So we will start with this process, first we need to upload the image and the config files that our devices will use:
 ```python
+from PnpProject import *
+
 #Login to APIC-EM and create thee file handler object
 credentials = pnp_login(username='admin', password='password', server='1.1.1.1')
 fh = PnpFileHandler(credentials)
