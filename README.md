@@ -43,8 +43,8 @@ dev.hostName = 'switch1'
 dev.serialNumber = '123456789'
 dev.platformId = 'WS-C3650-48PQ'
 #Use the image and config Id that we got above when we uploaded the image and config
-dev.imageId = IMAGE_ID
-dev.configId = CONFIG_ID
+dev.imageId = image_id
+dev.configId = config_id
 proj.add_device(dev)
 ```
 
