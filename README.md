@@ -3,6 +3,63 @@ PnpProject is a python class for creating and modifying Plug-n-Play Projects on 
 See main() for example of how to create a new project and populate with devices..
 
 # ###############
+###Where to Begin
+When using PnP, a common task is to start with creating a Project, and adding the devices to the project.  So we will start with this process, first we need to upload the image and the config files that our devices will use:
+```python
+#Login to APIC-EM and create thee file handler object
+credentials = pnp_login(username='admin', password='password', server='1.1.1.1')
+fh = PnpFileHandler(credentials)
+
+#Check to see if the image already exists, if not, upload the image
+IMAGE_PATH = '/path/to/image/'
+IMAGE_NAME = 'image.bin'
+image_id = fh.get_file_id_by_name(IMAGE_NAME, 'image')
+if image_id is None:
+    image_id = fh.upload_file(IMAGE_PATH + IMAGE_NAME, 'image')
+
+#Check to see if the config already exists, if not, upload the config
+CONFIG_PATH = '/path/to/config/'
+#config needs to have a .txt or .json extension - required by APIC-EM
+CONFIG_NAME = 'config.txt'
+config_id = fh.get_file_id_by_name(CONFIG_NAME)
+if config_id is None:
+    config_id = fh.upload_file(CONFIG_PATH+CONFIG_NAME)
+```
+
+Now that the image and config are uploaded to APIC-EM, we need to create a new Project:
+```python
+SITE_NAME = 'Site1'
+proj = PnpProject(credentials)
+proj.siteName = SITE_NAME
+proj.create_project()
+```
+
+Once the Project is created, you can start adding devices:
+```python
+dev = PnpDevice()
+dev.hostName = 'switch1'
+dev.serialNumber = '123456789'
+dev.platformId = 'WS-C3650-48PQ'
+#Use the image and config Id that we got above when we uploaded the image and config
+dev.imageId = IMAGE_ID
+dev.configId = CONFIG_ID
+proj.add_device(dev)
+```
+
+Creating Projects and Devices can be done two different ways... one way is using the method above where you create the project or the device, define the attributes, and then call the create_project() or add_device() method.  This way seems to be easier for readability.  
+
+The other option is to define all the attributes in a project_definitions dictionary, or device_definitions dictionary.  This way seems to be easier if you've already got a data set that you want to reference.  The create_project method is still used, but you need to use the add_device_with_parameters method to add a device based on a device definition dictionary.
+
+```python
+proj = PnpProject(credentials)
+projectDef = {'siteName' : 'TFTPProject', 'tftpServer' : '1.1.1.1', 'tftpPath' : '/files/'}
+proj.create_project(projectDef)
+
+device_definition = {'imageId': image_id, 'platformId': 'WS-C3650-48PQ', 'configId': config_id, 'hostName': 'switch4'}
+proj.add_device_with_parameters(device_definition)
+```
+
+# ###############
 ###Get an existing Project:
 Instantiate the Project and then call 'get_project_by_name' or 'get_project_by_id'
 ```python
@@ -65,7 +122,7 @@ u'switch1'
 >>> image_id = get_file_id_by_name(credentials, 'cat3k_caa-universalk9.SPA.03.07.04.E.152-3.E4.bin', 'image')
 >>> config_id = get_file_id_by_name(credentials, 'switch4.txt')
 >>> device_definition = {'imageId': image_id, 'platformId': 'WS-C3650-48PQ', 'configId': config_id, 'hostName': 'switch4'}
->>> proj.add_device(device_definition)
+>>> proj.add_device_with_parameters(device_definition)
 Device Added to Project: switch4 (3ecc60a8-19a8-41c9-977d-f0e39383b953) added to Project myProject (be358095-2f6a-4e47-8dcd-e6b9bdf66ecc)
 ```
 

@@ -282,9 +282,17 @@ class PnpProject:
             self.get_project_by_id(self.id, False)
             return self.id
 
-    def add_device(self, device_parameters):
+    def add_device(self, device):
+        device.create_device(self)
+        if device.error:
+            print('Error Adding Device to Project: ' + device.error_reason + '(Device Name: ' + device.hostName + ')')
+        else:
+            self.device_list[device.hostName] = device
+            self.get_project_by_id(self.id, False)
+
+    def add_device_with_parameters(self, device_parameters):
         device = PnpDevice()
-        device.create_device(device_parameters, self)
+        device.create_device(self, device_parameters)
         if device.error:
             print('Error Adding Device to Project: ' + device.error_reason + '(Device Name: ' + device_parameters['hostName'] + ')')
         else:
@@ -357,6 +365,7 @@ class PnpDevice:
         self.error = False
         self.error_reason = ''
         #APIC-EM PnP Device Attribues:
+        self.state = None
         self.authStatus = None
         self.lastContact = None
         self.deviceId = None
@@ -386,7 +395,7 @@ class PnpDevice:
         self.configPreference = None
         self.attributeInfo = None
 
-    def create_device(self, device_parameters, project):
+    def create_device(self, project, device_parameters=None):
         """ device_parameters needs to be a dictionary of the following format (not all fields required):
         device_parameters {
             serialNumber (string): Serial number,
@@ -413,6 +422,9 @@ class PnpDevice:
             connetedToLocationGeoAddr (string, optional)
         }
         """
+        if device_parameters is None:
+            device_parameters = self.create_device_parameters()
+
         response = make_rest_call(project.credentials, POST, '/api/v1/pnp-project/' + project.id + '/device', [device_parameters])
         task_status = get_task_id(project.credentials, response['response']['taskId'])
 
@@ -428,7 +440,38 @@ class PnpDevice:
                 self.populate_device_from_apic(self.id, project)
                 print('Device Added to Project: ' + self.hostName + ' (' + self.id + ') added to Project ' + project.siteName + ' (' + project.id + ')')
 
-    #def create_device_parameters(self):
+    def create_device_parameters(self):
+        device_parameters = {}
+        if self.state is not None: device_parameters['state'] = self.state
+        if self.authStatus is not None: device_parameters['authStatus'] = self.authStatus
+        if self.lastContact is not None: device_parameters['lastContact'] = self.lastContact
+        if self.deviceId is not None: device_parameters['deviceId'] = self.deviceId
+        if self.lastStateTransitionTime is not None: device_parameters['lastStateTransitionTime'] = self.lastStateTransitionTime
+        if self.stateDisplay is not None: device_parameters['stateDisplay'] = self.stateDisplay
+        if self.hostName is not None: device_parameters['hostName'] = self.hostName
+        if self.serialNumber is not None: device_parameters['serialNumber'] = self.serialNumber
+        if self.tag is not None: device_parameters['tag'] = self.tag
+        if self.id is not None: device_parameters['id'] = self.id
+        if self.platformId is not None: device_parameters['platformId'] = self.platformId
+        if self.site is not None: device_parameters['site'] = self.site
+        if self.imageId is not None: device_parameters['imageId'] = self.imageId
+        if self.configId is not None: device_parameters['configId'] = self.configId
+        if self.bootStrapId is not None: device_parameters['bootStrapId'] = self.bootStrapId
+        if self.licenseString is not None: device_parameters['licenseString'] = self.licenseString
+        if self.apCount is not None: device_parameters['apCount'] = self.apCount
+        if self.isMobilityController is not None: device_parameters['isMobilityController'] = self.isMobilityController
+        if self.pkiEnabled is not None: device_parameters['pkiEnabled'] = self.pkiEnabled
+        if self.sudiRequired is not None: device_parameters['sudiRequired'] = self.sudiRequired
+        if self.connectedToDeviceId is not None: device_parameters['connectedToDeviceId'] = self.connectedToDeviceId
+        if self.connectedToPortId is not None: device_parameters['connectedToPortId'] = self.connectedToPortId
+        if self.connectedToPortName is not None: device_parameters['connectedToPortName'] = self.connectedToPortName
+        if self.connetedToLocationCivicAddr is not None: device_parameters['connetedToLocationCivicAddr'] = self.connetedToLocationCivicAddr
+        if self.imagePreference is not None: device_parameters['imagePreference'] = self.imagePreference
+        if self.connectedToDeviceHostName is not None: device_parameters['connectedToDeviceHostName'] = self.connectedToDeviceHostName
+        if self.connetedToLocationGeoAddr is not None: device_parameters['connetedToLocationGeoAddr'] = self.connetedToLocationGeoAddr
+        if self.configPreference is not None: device_parameters['configPreference'] = self.configPreference
+        if self.attributeInfo is not None: device_parameters['attributeInfo'] = self.attributeInfo
+        return device_parameters        
 
     def populate_device_from_apic(self, deviceId, project, deviceDetail=None):
         if deviceId is not None and deviceDetail is None:
