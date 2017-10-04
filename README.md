@@ -3,7 +3,7 @@ PnpProject is a python class for creating and modifying Plug-n-Play Projects on 
 See main() for example of how to create a new project and populate with devices..
 
 # ###############
-###Where to Begin
+### Where to Begin
 When using PnP, a common task is to start with creating a Project, and adding the devices to the project.  So we will start with this process, first we need to upload the image and the config files that our devices will use:
 ```python
 from PnpProject import *
@@ -62,7 +62,7 @@ proj.add_device_with_parameters(device_definition)
 ```
 
 # ###############
-###Get an existing Project:
+### Get an existing Project:
 Instantiate the Project and then call 'get_project_by_name' or 'get_project_by_id'
 ```python
 >>> from PnpProject import *
@@ -107,7 +107,7 @@ u'switch1'
 ```
 
 # ###############
-###Methods and Properties of the PnpProject and PnpDevice classes:
+### Methods and Properties of the PnpProject and PnpDevice classes:
 ```python
 >>> dir(proj)
 ['__doc__', '__init__', '__module__', 'add_device', 'create_project', 'credentials', 'deviceCount', 'deviceLastUpdate', 'device_list', 'error', 'error_reason', 'get_device_by_id', 'get_device_by_name', 'get_project_by_id', 'get_project_by_name', 'id', 'installerUserID', 'note', 'pendingDeviceCount', 'provisionedBy', 'provisionedOn', 'siteName', 'state', 'tftpPath', 'tftpServer']
@@ -119,7 +119,7 @@ u'switch1'
 ```
 
 # ###############
-###Add a device to an existing Project
+### Add a device to an existing Project
 ```python
 >>> image_id = get_file_id_by_name(credentials, 'cat3k_caa-universalk9.SPA.03.07.04.E.152-3.E4.bin', 'image')
 >>> config_id = get_file_id_by_name(credentials, 'switch4.txt')
