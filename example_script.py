@@ -37,5 +37,5 @@ for file in os.listdir(CONFIG_PATH):
         #replace any dots in the file name with dashes because device names cannot include dots
         device_name = file.replace('.', '-')
         device_definition = {'imageId': image_id, 'platformId': PLATFORM, 'configId': config_id, 'hostName': device_name}
-        proj.add_device(device_definition)
+        proj.add_device_with_parameters(device_definition)
 
